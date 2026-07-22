@@ -6,7 +6,6 @@ const message = document.querySelector('#form-message');
 const submitButton = document.querySelector('#submit-button');
 const leaderboard = document.querySelector('#leaderboard');
 const stats = document.querySelector('#stats');
-let turnstileWidget;
 
 const argentinaDate = new Intl.DateTimeFormat('es-AR', { timeZone: 'America/Argentina/Cordoba', day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
 const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
@@ -16,21 +15,25 @@ betToggle.addEventListener('change', () => {
   receiptInput.required = betToggle.checked;
 });
 
-function loadTurnstileScript() {
-  if (window.turnstile) return Promise.resolve();
+function loadTurnstileScript(siteKey) {
+  const container = document.querySelector('#turnstile');
+  container.classList.add('cf-turnstile');
+  container.dataset.sitekey = siteKey;
+  container.dataset.theme = 'light';
+  container.dataset.size = 'flexible';
   return new Promise((resolve, reject) => {
     const existing = document.querySelector('script[data-turnstile-script]');
     const script = existing || document.createElement('script');
     const deadline = Date.now() + 12000;
     const waitUntilReady = () => {
-      if (window.turnstile) return resolve();
+      if (container.querySelector('iframe, input[name="cf-turnstile-response"]')) return resolve();
       if (Date.now() >= deadline) return reject(new Error('Turnstile no respondió.'));
       window.setTimeout(waitUntilReady, 50);
     };
     script.addEventListener('load', waitUntilReady, { once:true });
     script.addEventListener('error', () => reject(new Error('No pudimos cargar la verificación anti-bots.')), { once:true });
     if (!existing) {
-      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
       script.async = true;
       script.defer = true;
       script.dataset.turnstileScript = '';
@@ -45,8 +48,7 @@ async function loadConfig() {
     if (!response.ok) throw new Error();
     const config = await response.json();
     if (config.turnstileSiteKey) {
-      await loadTurnstileScript();
-      turnstileWidget = window.turnstile.render('#turnstile', { sitekey: config.turnstileSiteKey, theme:'light', size:'flexible' });
+      await loadTurnstileScript(config.turnstileSiteKey);
     }
   } catch {
     message.className = 'form-message error';
@@ -92,11 +94,11 @@ form.addEventListener('submit', async (event) => {
     if (!response.ok) throw new Error(body.error || 'No pudimos guardar tu predicción.');
     form.reset(); receiptArea.hidden = true; receiptInput.required = false;
     message.classList.add('success'); message.textContent = '¡Listo! Tu corazonada ya está en la lista 💛';
-    if (turnstileWidget !== undefined) window.turnstile.reset(turnstileWidget);
+    if (window.turnstile) window.turnstile.reset();
     await loadGuesses();
   } catch (error) {
     message.classList.add('error'); message.textContent = error.message;
-    if (turnstileWidget !== undefined) window.turnstile.reset(turnstileWidget);
+    if (window.turnstile) window.turnstile.reset();
   } finally {
     submitButton.disabled = false; submitButton.firstChild.textContent = 'Guardar mi predicción ';
   }
