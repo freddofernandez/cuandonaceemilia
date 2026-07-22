@@ -130,7 +130,9 @@ async function mountTurnstile(siteKey) {
     theme: 'light',
     size: 'flexible',
     action: 'turnstile-spin-v2',
-    callback: () => setMessage('', ''),
+    callback: () => {
+      if (/verificación|anti-bots|persona/i.test(message.textContent)) setMessage('', '');
+    },
     'expired-callback': () => setMessage('error', 'La verificación venció. Completala nuevamente.'),
     'error-callback': () => setMessage('error', 'No pudimos cargar la verificación anti-bots. Recargá la página para participar.')
   });

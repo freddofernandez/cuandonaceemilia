@@ -35,6 +35,7 @@ test('Turnstile API has a single idempotent loader', async () => {
   assert.match(app, /response\.status === 429/);
   assert.match(app, /showSubmissionLimit\(\)/);
   assert.match(app, /scope=ip-status/);
+  assert.match(app, /\/verificación\|anti-bots\|persona\/i/);
 });
 
 test('database schema and migration enforce five submissions per IP', async () => {

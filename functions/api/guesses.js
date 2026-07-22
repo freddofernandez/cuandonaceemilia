@@ -112,7 +112,13 @@ export async function onRequestPost({ request, env }) {
     if (!createResponse.ok) {
       if (created.code === 'P0001' && `${created.message || ''}`.includes('ip_submission_limit_reached')) return ipLimitResponse();
       if (created.code === '23505') {
-        const details = `${created.message || ''} ${created.details || ''}`;
+        const details = [created.message, created.details, created.hint, created.constraint, JSON.stringify(created)].filter(Boolean).join(' ').toLowerCase();
+        if (details.includes('ip_hash') || details.includes('emilia_ip_unique')) {
+          return json({
+            error:'La base de datos todavía tiene activo el límite anterior de una predicción por conexión.',
+            code:'IP_LIMIT_MIGRATION_REQUIRED'
+          }, 503);
+        }
         const label = details.includes('nickname') ? 'Ese apodo' : details.includes('email') ? 'Ese email' : details.includes('birth_datetime') ? 'Esa fecha y hora' : details.includes('weight_grams') ? 'Ese peso' : 'Ese dato';
         return json({ error:`${label} ya está en uso. Probá con otro.` }, 409);
       }

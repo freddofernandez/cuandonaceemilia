@@ -108,6 +108,19 @@ test('database uniqueness conflicts become friendly HTTP 409 responses', async (
   assert.match((await response.json()).error, /Ese peso ya está en uso/);
 });
 
+test('the legacy one-IP constraint reports the missing production migration', async () => {
+  globalThis.fetch = async (_url, init = {}) => (init.method || 'GET') === 'GET'
+    ? Response.json([{ id:1 }])
+    : Response.json({
+      code:'23505',
+      details:null,
+      message:'duplicate key value violates unique constraint "emilia_ip_unique"'
+    }, { status:409 });
+  const response = await onRequestPost({ request:submission(), env });
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).code, 'IP_LIMIT_MIGRATION_REQUIRED');
+});
+
 test('a connection with five predictions is blocked before insertion', async () => {
   let insertCalled = false;
   globalThis.fetch = async (_url, init = {}) => {
