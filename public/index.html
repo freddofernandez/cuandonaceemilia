@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+Tamma+2:wght@500;600;700;800&family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <script type="module" src="/app.js"></script>
 </head>
 <body>
@@ -128,7 +127,7 @@
         </div>
 
         <label class="honeypot" aria-hidden="true">No completar<input name="website" tabindex="-1" autocomplete="off"></label>
-        <div id="turnstile" class="turnstile" data-action="turnstile-spin-v2" aria-label="Verificación anti-bots"></div>
+        <div id="turnstile-widget" class="turnstile" data-action="turnstile-spin-v2" aria-label="Verificación anti-bots"></div>
         <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
         <button id="submit-button" class="submit-button" type="submit">Guardar mi predicción <span aria-hidden="true">♥</span></button>
         <p class="privacy"><span aria-hidden="true">🔒</span> Tu email y comprobante nunca se muestran públicamente.</p>

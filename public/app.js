@@ -21,6 +21,7 @@ const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (char) => ({ '&'
 
 let turnstileWidgetId = null;
 let turnstileConfigured = false;
+let turnstileApiPromise = null;
 
 function populateGuessDates() {
   const start = new Date(2026, 6, 23);
@@ -64,23 +65,41 @@ function setMessage(type, text) {
   message.textContent = text;
 }
 
-function waitForTurnstile() {
-  if (window.turnstile) return Promise.resolve(window.turnstile);
-  return new Promise((resolve, reject) => {
-    const deadline = Date.now() + 12000;
-    const check = () => {
-      if (window.turnstile) return resolve(window.turnstile);
-      if (Date.now() >= deadline) return reject(new Error('Turnstile no respondió.'));
-      window.setTimeout(check, 50);
+function loadTurnstileApi() {
+  if (typeof window.turnstile?.render === 'function') return Promise.resolve(window.turnstile);
+  if (turnstileApiPromise) return turnstileApiPromise;
+
+  turnstileApiPromise = new Promise((resolve, reject) => {
+    const existingScript = document.querySelector('script[data-turnstile-api]');
+    const script = existingScript || document.createElement('script');
+    const timeoutId = window.setTimeout(() => reject(new Error('Turnstile no respondió.')), 12000);
+    const finish = () => {
+      window.clearTimeout(timeoutId);
+      if (typeof window.turnstile?.render === 'function') resolve(window.turnstile);
+      else reject(new Error('La API de Turnstile no quedó disponible.'));
     };
-    check();
+    const fail = () => {
+      window.clearTimeout(timeoutId);
+      reject(new Error('No se pudo descargar la API de Turnstile.'));
+    };
+
+    script.addEventListener('load', finish, { once: true });
+    script.addEventListener('error', fail, { once: true });
+    if (!existingScript) {
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.defer = true;
+      script.dataset.turnstileApi = '';
+      document.head.append(script);
+    }
   });
+
+  return turnstileApiPromise;
 }
 
 async function mountTurnstile(siteKey) {
   if (turnstileWidgetId !== null) return;
-  const api = await waitForTurnstile();
-  const container = document.querySelector('#turnstile');
+  const api = await loadTurnstileApi();
+  const container = document.querySelector('#turnstile-widget');
   turnstileWidgetId = api.render(container, {
     sitekey: siteKey,
     theme: 'light',
