@@ -3,76 +3,99 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="¿Cuándo nace Emilia? Dejá tu predicción de fecha, hora y peso.">
+  <meta name="description" content="Dejá tu predicción para la llegada de Emilia y mirá el leaderboard familiar.">
   <meta name="theme-color" content="#fff8f2">
-  <title>¿Cuándo nace Emilia? 🌼</title>
+  <title>La llegada de Emilia 🌼</title>
   <link rel="stylesheet" href="/styles.css">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <script type="module" src="/app.js"></script>
 </head>
 <body>
   <div class="petal petal-one" aria-hidden="true"></div>
   <div class="petal petal-two" aria-hidden="true"></div>
+
   <header class="hero">
-    <p class="eyebrow">Una espera muy especial</p>
-    <h1>¿Cuándo nace<br><em>Emilia?</em></h1>
-    <p class="intro">Familia y amigos: anímense a adivinar el día, la hora y el pesito con el que llega Emi. 💛</p>
-    <a class="primary-link" href="#participar">Quiero dejar mi predicción <span>↓</span></a>
+    <div class="topbar">
+      <a class="brand" href="/" aria-label="La llegada de Emilia">Emilia <span>🌼</span></a>
+      <nav class="view-toggle" aria-label="Navegación principal">
+        <button class="view-button is-active" type="button" data-view="participate" aria-pressed="true">Quiero participar</button>
+        <button class="view-button" type="button" data-view="leaderboard" aria-pressed="false">Ver leaderboard</button>
+      </nav>
+    </div>
+
+    <div class="hero-copy">
+      <p class="eyebrow">Una espera muy especial</p>
+      <h1>¿Cuándo llega<br><em>Emilia?</em></h1>
+      <p class="intro">Familia y amigos, dejen su corazonada: elijan el día, la hora y el peso con el que llega Emi. La predicción más cercana se lleva todo nuestro amor (y una pequeña gloria familiar). 💛</p>
+      <button class="hero-cta" type="button" data-view="participate">Dejar mi predicción <span aria-hidden="true">↓</span></button>
+    </div>
+
+    <div class="hero-note"><span class="note-dot" aria-hidden="true"></span><span>Una jugada por persona · sin editar después de enviarla</span></div>
   </header>
 
   <main>
-    <section id="participar" class="form-section">
-      <div class="section-heading">
-        <span class="step">01</span>
-        <div><p class="kicker">Tu corazonada</p><h2>Hacé tu apuesta</h2></div>
+    <section id="participar" class="view-panel participate-panel" data-panel="participate" aria-labelledby="participate-title">
+      <div class="section-intro">
+        <p class="kicker">Tu corazonada</p>
+        <h2 id="participate-title">Hacé tu apuesta</h2>
+        <p>Completá tus datos y guardá una fecha, una hora y un peso. Todo queda entre nosotros: tu email y tu comprobante nunca aparecen en la lista.</p>
       </div>
 
       <form id="guess-form" novalidate>
         <div class="field-grid">
-          <label>Tu apodo <span>*</span>
-            <input name="nickname" autocomplete="nickname" maxlength="30" minlength="2" placeholder="Ej: Tía Juli" required>
+          <label class="field">
+            <span class="field-title">Tu apodo <i>*</i></span>
+            <span class="field-bubble"><span class="field-icon" aria-hidden="true">☺</span><input name="nickname" autocomplete="nickname" maxlength="30" minlength="2" placeholder="Ej: Tía Juli" required></span>
           </label>
-          <label>Tu email <span>*</span>
-            <input name="email" type="email" autocomplete="email" maxlength="254" placeholder="Para identificar tu jugada" required>
+          <label class="field">
+            <span class="field-title">Tu email <i>*</i></span>
+            <span class="field-bubble"><span class="field-icon" aria-hidden="true">@</span><input name="email" type="email" autocomplete="email" maxlength="254" placeholder="Para identificar tu jugada" required></span>
           </label>
-          <label>Fecha y hora <span>*</span>
-            <input name="birth_datetime" type="datetime-local" step="60" required>
+          <label class="field">
+            <span class="field-title">Fecha y hora <i>*</i></span>
+            <span class="field-bubble"><span class="field-icon" aria-hidden="true">▣</span><input name="birth_datetime" type="datetime-local" step="60" required></span>
             <small>Horario de Argentina 🇦🇷</small>
           </label>
-          <label>Peso estimado <span>*</span>
-            <div class="input-suffix"><input name="weight_grams" type="number" inputmode="numeric" min="1500" max="6000" step="1" placeholder="3250" required><b>gramos</b></div>
+          <label class="field">
+            <span class="field-title">Peso estimado <i>*</i></span>
+            <span class="field-bubble"><span class="field-icon" aria-hidden="true">✦</span><span class="input-suffix"><input name="weight_grams" type="number" inputmode="numeric" min="1500" max="6000" step="1" placeholder="3250" required><b>gramos</b></span></span>
           </label>
         </div>
 
         <div class="bet-card">
-          <label class="toggle-row">
+          <label class="bet-toggle">
             <input id="wants-bet" name="wants_bet" type="checkbox">
-            <span class="fake-check" aria-hidden="true">✓</span>
-            <span><strong>Quiero participar de la vaquita</strong><small>Aporte opcional de $5.000 ARS</small></span>
+            <span class="switch" aria-hidden="true"></span>
+            <span><strong>También quiero participar de la vaquita</strong><small>Aporte opcional de $5.000 ARS</small></span>
           </label>
           <div id="receipt-area" class="receipt-area" hidden>
-            <label>Comprobante de transferencia <span>*</span>
-              <input id="receipt" name="receipt" type="file" accept="image/jpeg,image/png,image/webp,application/pdf">
+            <label class="field">
+              <span class="field-title">Comprobante de transferencia <i>*</i></span>
+              <span class="file-bubble"><input id="receipt" name="receipt" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><span id="file-name">Elegir archivo</span></span>
               <small>JPG, PNG, WebP o PDF · máximo 5 MB. El archivo es privado.</small>
             </label>
           </div>
         </div>
 
         <label class="honeypot" aria-hidden="true">No completar<input name="website" tabindex="-1" autocomplete="off"></label>
-        <div id="turnstile" class="turnstile"></div>
+        <div id="turnstile" class="turnstile" data-action="turnstile-spin-v2" aria-label="Verificación anti-bots"></div>
         <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
-        <button id="submit-button" class="submit-button" type="submit">Guardar mi predicción <span>♡</span></button>
+        <button id="submit-button" class="submit-button" type="submit">Guardar mi predicción <span aria-hidden="true">♡</span></button>
         <p class="privacy">Tu email y comprobante nunca se muestran públicamente.</p>
       </form>
     </section>
 
-    <section class="board-section" aria-labelledby="board-title">
-      <div class="section-heading board-heading">
-        <span class="step">02</span>
-        <div><p class="kicker">Así viene la cosa</p><h2 id="board-title">Las predicciones</h2></div>
+    <section id="leaderboard" class="view-panel leaderboard-panel" data-panel="leaderboard" aria-labelledby="board-title" hidden>
+      <div class="section-intro board-intro">
+        <div>
+          <p class="kicker">Así viene la cosa</p>
+          <h2 id="board-title">El leaderboard</h2>
+        </div>
         <button id="refresh-button" class="refresh" type="button" aria-label="Actualizar predicciones">↻</button>
       </div>
       <div id="stats" class="stats" aria-live="polite"></div>
-      <div id="leaderboard" class="leaderboard"><p class="loading">Cargando corazonadas…</p></div>
+      <div id="leaderboard-list" class="leaderboard-list"><p class="loading">Cargando corazonadas…</p></div>
+      <button class="secondary-cta" type="button" data-view="participate">Quiero dejar mi predicción <span aria-hidden="true">→</span></button>
     </section>
   </main>
 

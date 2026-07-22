@@ -21,6 +21,7 @@ function submission(overrides = {}) {
   form.set('email', overrides.email || 'juli@example.com');
   form.set('birth_datetime', overrides.birth_datetime || futureLocalMinute());
   form.set('weight_grams', String(overrides.weight_grams || 3250));
+  if (overrides.turnstileToken) form.set('cf-turnstile-response', overrides.turnstileToken);
   if (overrides.wants_bet) form.set('wants_bet', 'on');
   if (overrides.receipt) form.set('receipt', overrides.receipt, overrides.filename || 'transferencia.pdf');
   return new Request('https://cuandonaceemilia.pages.dev/api/guesses', {
@@ -58,6 +59,22 @@ test('valid prediction is inserted with normalized identity and hashed IP', asyn
   assert.equal(inserted.email, 'juli@example.com');
   assert.match(inserted.ip_hash, /^[a-f0-9]{64}$/);
   assert.equal(inserted.birth_datetime.endsWith(':00.000Z'), true);
+});
+
+test('production Turnstile verification uses the canonical siteverify contract', async () => {
+  const calls = [];
+  const productionEnv = { ...env, CF_PAGES_BRANCH:'production', TURNSTILE_SECRET_KEY:'turnstile-secret' };
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push({ url:String(url), init });
+    if (String(url).includes('/siteverify')) return Response.json({ success:true });
+    return Response.json([{ id:'7a908e56-40f2-4d64-a2a4-b0cc2a6385c1' }]);
+  };
+  const response = await onRequestPost({ request:submission({ turnstileToken:'valid-token' }), env:productionEnv });
+  assert.equal(response.status, 201);
+  const verification = calls.find((call) => call.url.includes('/siteverify'));
+  assert.equal(verification.init.headers['Content-Type'], 'application/x-www-form-urlencoded');
+  assert.equal(new URLSearchParams(verification.init.body).get('secret'), 'turnstile-secret');
+  assert.equal(new URLSearchParams(verification.init.body).get('response'), 'valid-token');
 });
 
 test('receipt flow uploads privately and stores only its random path', async () => {

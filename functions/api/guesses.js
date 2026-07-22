@@ -22,14 +22,17 @@ async function ipHash(request, secret) {
 }
 
 async function verifyTurnstile(request, env, token) {
-  if (!env.TURNSTILE_SECRET_KEY) {
+  const secret = env.TURNSTILE_SECRET_KEY || env.TURNSTILE_SECRET;
+  if (!secret) {
     if (env.CF_PAGES_BRANCH === 'local') return true;
     throw new Error('Turnstile no está configurado.');
   }
   if (!token) return false;
+  const body = new URLSearchParams({ secret, response:token });
+  const ip = request.headers.get('CF-Connecting-IP');
+  if (ip) body.set('remoteip', ip);
   const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ secret:env.TURNSTILE_SECRET_KEY, response:token, remoteip:request.headers.get('CF-Connecting-IP') })
+    method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body
   });
   const result = await response.json();
   return result.success === true;
