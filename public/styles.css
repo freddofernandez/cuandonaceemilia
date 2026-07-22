@@ -163,6 +163,8 @@ small { display: block; padding-left: 5px; color: var(--muted); font-size: .7rem
 .leaderboard-list { display: grid; gap: 11px; margin-left: 76px; }
 .guess-row { display: grid; grid-template-columns: 55px 1.2fr 1fr .65fr auto; align-items: center; gap: 16px; padding: 17px 20px; border: 2px solid var(--ink); border-radius: 18px; background: var(--white); box-shadow: 5px 6px 0 rgba(23,23,23,.18); transition: transform .18s; }
 .guess-row:hover { transform: translateY(-2px) rotate(-.15deg); }
+.guess-row-toggleable { cursor: pointer; }
+.guess-row-toggleable:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
 .rank { display: grid; place-items: center; width: 43px; height: 43px; border: 2px solid var(--ink); border-radius: 12px; background: var(--peach); font: 800 1rem "Baloo Tamma 2", sans-serif; }
 .name { font: 700 1rem "Baloo Tamma 2", sans-serif; }
 .date, .weight { color: var(--muted); font-size: .82rem; }
@@ -170,9 +172,9 @@ small { display: block; padding-left: 5px; color: var(--muted); font-size: .7rem
 .bet-badge { justify-self: end; padding: 5px 9px; border: 2px solid var(--ink); border-radius: 999px; background: var(--green); font-size: .61rem; font-weight: 800; }
 .bet-badge-placeholder { visibility: hidden; }
 .guess-actions { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
-.message-toggle { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; border: 2px solid var(--ink); border-radius: 50%; color: var(--ink); background: var(--yellow); box-shadow: 2px 3px 0 var(--ink); cursor: pointer; transition: transform .18s, box-shadow .18s; }
-.message-toggle:hover { transform: translate(1px, 1px); box-shadow: 1px 2px 0 var(--ink); }
-.message-toggle[aria-expanded="true"] { background: var(--peach); }
+.message-toggle { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; border: 2px solid var(--ink); border-radius: 50%; color: var(--ink); background: var(--yellow); box-shadow: 2px 3px 0 var(--ink); transition: transform .18s, box-shadow .18s, background .18s; }
+.guess-row-toggleable:hover .message-toggle { transform: translate(1px, 1px); box-shadow: 1px 2px 0 var(--ink); }
+.guess-row-toggleable[aria-expanded="true"] .message-toggle { background: var(--peach); }
 .guess-message { grid-column: 2 / -1; margin: 0; padding: 13px 15px; border: 2px dashed var(--peach); border-radius: 14px; color: #554c47; background: var(--blush); font-size: .8rem; line-height: 1.55; white-space: pre-wrap; }
 .empty, .loading { padding: 40px 12px; border: 2px dashed var(--ink); border-radius: 20px; background: rgba(255,255,255,.45); text-align: center; }
 .secondary-cta { margin: 32px 0 0 76px; color: var(--ink); background: var(--white); }

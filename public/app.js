@@ -176,7 +176,7 @@ async function loadGuesses() {
       const familyMessage = String(guess.family_message || '').trim();
       const messageId = `guess-message-${index}`;
       return `
-      <article class="guess-row">
+      <article class="guess-row${familyMessage ? ' guess-row-toggleable' : ''}"${familyMessage ? ` role="button" tabindex="0" aria-expanded="false" aria-controls="${messageId}" aria-label="Ver mensaje de ${escapeHtml(guess.nickname)}" data-message-id="${messageId}"` : ''}>
         <span class="rank">${String(index + 1).padStart(2, '0')}</span>
         <span class="name">${escapeHtml(guess.nickname)}</span>
         <time class="date" datetime="${escapeHtml(guess.birth_datetime)}">${argentinaDate.format(parseArgentinaDate(guess.birth_datetime))}</time>
@@ -185,7 +185,7 @@ async function loadGuesses() {
           ${guess.wants_bet
             ? '<span class="bet-badge">VAQUITA ♡</span>'
             : '<span class="bet-badge bet-badge-placeholder" aria-hidden="true">VAQUITA ♡</span>'}
-          ${familyMessage ? `<button class="message-toggle" type="button" aria-expanded="false" aria-controls="${messageId}" aria-label="Ver mensaje de ${escapeHtml(guess.nickname)}">✉</button>` : ''}
+          ${familyMessage ? '<span class="message-toggle" aria-hidden="true">💬</span>' : ''}
         </span>
         ${familyMessage ? `<p id="${messageId}" class="guess-message" hidden>${escapeHtml(familyMessage)}</p>` : ''}
       </article>`;
@@ -195,14 +195,25 @@ async function loadGuesses() {
   }
 }
 
-leaderboardList.addEventListener('click', (event) => {
-  const button = event.target.closest('.message-toggle');
-  if (!button) return;
-  const panel = document.getElementById(button.getAttribute('aria-controls'));
-  const expanded = button.getAttribute('aria-expanded') === 'true';
-  button.setAttribute('aria-expanded', String(!expanded));
-  button.setAttribute('aria-label', `${expanded ? 'Ver' : 'Ocultar'} mensaje`);
+function toggleGuessMessage(row) {
+  const panel = document.getElementById(row.dataset.messageId);
+  const expanded = row.getAttribute('aria-expanded') === 'true';
+  row.setAttribute('aria-expanded', String(!expanded));
+  row.setAttribute('aria-label', `${expanded ? 'Ver' : 'Ocultar'} mensaje`);
   panel.hidden = expanded;
+}
+
+leaderboardList.addEventListener('click', (event) => {
+  const messageToggle = event.target.closest('.message-toggle');
+  const row = (messageToggle || event.target).closest('.guess-row-toggleable');
+  if (row) toggleGuessMessage(row);
+});
+
+leaderboardList.addEventListener('keydown', (event) => {
+  const row = event.target.closest('.guess-row-toggleable');
+  if (!row || (event.key !== 'Enter' && event.key !== ' ')) return;
+  event.preventDefault();
+  toggleGuessMessage(row);
 });
 
 function showView(view, updateUrl = true) {
