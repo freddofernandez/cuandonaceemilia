@@ -3,6 +3,9 @@ const betToggle = document.querySelector('#wants-bet');
 const receiptArea = document.querySelector('#receipt-area');
 const receiptInput = document.querySelector('#receipt');
 const fileName = document.querySelector('#file-name');
+const guessDate = document.querySelector('#guess-date');
+const guessTime = document.querySelector('#guess-time');
+const birthDatetime = document.querySelector('#birth-datetime');
 const message = document.querySelector('#form-message');
 const submitButton = document.querySelector('#submit-button');
 const leaderboardList = document.querySelector('#leaderboard-list');
@@ -19,10 +22,33 @@ const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (char) => ({ '&'
 let turnstileWidgetId = null;
 let turnstileConfigured = false;
 
-betToggle.addEventListener('change', () => {
+function populateGuessDates() {
+  const start = new Date(2026, 6, 23);
+  const end = new Date(2026, 7, 28);
+  const formatter = new Intl.DateTimeFormat('es-AR', { month: 'long' });
+  for (const date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+    const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = `${value === '2026-08-14' ? '★ ' : ''}${date.getDate()} ${formatter.format(date)}`;
+    guessDate.append(option);
+  }
+}
+
+function syncBirthDatetime() {
+  birthDatetime.value = guessDate.value && guessTime.value ? `${guessDate.value}T${guessTime.value}` : '';
+}
+
+function syncBetUI() {
   receiptArea.hidden = !betToggle.checked;
   receiptInput.required = betToggle.checked;
-});
+  betToggle.setAttribute('aria-expanded', String(betToggle.checked));
+}
+
+betToggle.addEventListener('change', syncBetUI);
+guessDate.addEventListener('change', syncBirthDatetime);
+guessTime.addEventListener('input', syncBirthDatetime);
+window.addEventListener('pageshow', syncBetUI);
 
 receiptInput.addEventListener('change', () => {
   const selected = receiptInput.files[0];
@@ -123,6 +149,7 @@ viewButtons.forEach((button) => button.addEventListener('click', () => {
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   setMessage('', '');
+  syncBirthDatetime();
   if (!form.reportValidity()) return;
   const file = receiptInput.files[0];
   if (file && file.size > 5 * 1024 * 1024) {
@@ -141,8 +168,8 @@ form.addEventListener('submit', async (event) => {
     const body = await response.json();
     if (!response.ok) throw new Error(body.error || 'No pudimos guardar tu predicción.');
     form.reset();
-    receiptArea.hidden = true;
-    receiptInput.required = false;
+    syncBirthDatetime();
+    syncBetUI();
     fileName.textContent = 'Elegir archivo';
     resetTurnstile();
     showView('leaderboard');
@@ -157,5 +184,7 @@ form.addEventListener('submit', async (event) => {
 });
 
 document.querySelector('#refresh-button').addEventListener('click', loadGuesses);
+populateGuessDates();
+syncBetUI();
 showView(window.location.hash === '#leaderboard' ? 'leaderboard' : 'participate', false);
 loadConfig();

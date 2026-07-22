@@ -17,7 +17,7 @@ function futureLocalMinute(days = 10) {
 
 function submission(overrides = {}) {
   const form = new FormData();
-  form.set('nickname', overrides.nickname || 'Tía Juli');
+  form.set('nickname', overrides.nickname || 'Tío Juan');
   form.set('email', overrides.email || 'juli@example.com');
   form.set('birth_datetime', overrides.birth_datetime || futureLocalMinute());
   form.set('weight_grams', String(overrides.weight_grams || 3250));
@@ -53,10 +53,10 @@ test('valid prediction is inserted with normalized identity and hashed IP', asyn
     inserted = JSON.parse(init.body);
     return Response.json([{ id:'7a908e56-40f2-4d64-a2a4-b0cc2a6385c1' }]);
   };
-  const response = await onRequestPost({ request:submission({ nickname:'  Tía   Juli  ', email:'JULI@EXAMPLE.COM' }), env });
+  const response = await onRequestPost({ request:submission({ nickname:'  Tío   Juan  ', email:'JUAN@EXAMPLE.COM' }), env });
   assert.equal(response.status, 201);
-  assert.equal(inserted.nickname, 'Tía Juli');
-  assert.equal(inserted.email, 'juli@example.com');
+  assert.equal(inserted.nickname, 'Tío Juan');
+  assert.equal(inserted.email, 'juan@example.com');
   assert.match(inserted.ip_hash, /^[a-f0-9]{64}$/);
   assert.equal(inserted.birth_datetime.endsWith(':00.000Z'), true);
 });

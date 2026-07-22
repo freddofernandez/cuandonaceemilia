@@ -1,129 +1,219 @@
 :root {
-  --ink: #27332d;
-  --muted: #6f7972;
-  --cream: #fff9f3;
-  --peach: #f6c5a5;
-  --peach-light: #fff0e5;
-  --coral: #d86f54;
-  --sage: #819b83;
-  --line: #eaded3;
+  --ink: #171717;
+  --orange: #f2480a;
+  --orange-dark: #d83c00;
+  --coral: #f67d51;
+  --peach: #fab49a;
+  --blush: #feece5;
+  --yellow: #ffd969;
+  --green: #62c584;
+  --blue: #77aad9;
+  --pink: #f95d51;
+  --cream: #fffaf7;
   --white: #fff;
-  --shadow: 0 16px 45px rgba(79, 57, 42, .08);
+  --muted: #6c6662;
+  --line: #eaded8;
+  --shadow: 0 22px 0 rgba(23, 23, 23, .08);
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; min-width: 320px; color: var(--ink); background: var(--cream); font-family: ui-rounded, "Avenir Next", Avenir, system-ui, sans-serif; line-height: 1.5; overflow-x: hidden; }
-button, input { font: inherit; }
+body { margin: 0; min-width: 320px; overflow-x: hidden; color: var(--ink); background: var(--cream); font-family: "Open Sans", sans-serif; line-height: 1.55; }
+button, input, select, textarea { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
-body::before { content: ""; position: absolute; inset: 0 0 auto; height: 620px; z-index: -2; background: radial-gradient(circle at 85% 18%, #f9dcc5 0 5%, transparent 30%), linear-gradient(145deg, #fffaf4 35%, #fcede2); }
-.petal { position: absolute; border-radius: 60% 40% 70% 30%; background: #efb995; opacity: .35; filter: blur(.2px); transform: rotate(35deg); z-index: -1; }
-.petal-one { width: 220px; height: 110px; top: 100px; left: -100px; }
-.petal-two { width: 170px; height: 80px; top: 430px; right: -70px; transform: rotate(-25deg); }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
 
-.hero { max-width: 1120px; min-height: 690px; margin: auto; padding: 22px 20px 64px; display: flex; flex-direction: column; }
-.topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.brand { color: var(--ink); font: italic 1.5rem Georgia, serif; text-decoration: none; white-space: nowrap; }
-.brand span { font-style: normal; font-size: 1rem; }
-.view-toggle { display: inline-flex; gap: 3px; padding: 4px; background: rgba(255, 255, 255, .72); border: 1px solid rgba(218, 193, 173, .75); border-radius: 999px; box-shadow: 0 4px 14px rgba(97, 66, 47, .06); }
-.view-button { border: 0; border-radius: 999px; padding: 9px 12px; color: var(--muted); background: transparent; font-size: .72rem; font-weight: 700; cursor: pointer; transition: .2s; }
-.view-button.is-active { color: var(--ink); background: var(--white); box-shadow: 0 2px 7px rgba(79, 57, 42, .1); }
-.hero-copy { max-width: 690px; margin: auto 0; padding-top: 42px; }
-.eyebrow, .kicker { color: var(--coral); font-size: .72rem; font-weight: 800; letter-spacing: .17em; text-transform: uppercase; margin: 0 0 13px; }
-h1, h2 { font-family: Iowan Old Style, "Palatino Linotype", Georgia, serif; font-weight: 400; line-height: .96; margin: 0; }
-h1 { font-size: clamp(3.7rem, 17vw, 7.9rem); letter-spacing: -.055em; }
-h1 em { color: var(--coral); }
-.intro { max-width: 560px; color: #59655d; font-size: 1.02rem; margin: 25px 0 27px; }
-.hero-cta, .secondary-cta { display: inline-flex; align-items: center; justify-content: center; gap: 16px; border: 0; color: var(--white); background: var(--ink); padding: 15px 19px; font-weight: 800; cursor: pointer; transition: .2s; }
-.hero-cta:hover, .submit-button:hover, .secondary-cta:hover { background: #3b4a41; transform: translateY(-1px); }
-.hero-cta span, .secondary-cta span { color: var(--peach); font-size: 1.2rem; }
-.hero-note { display: flex; align-items: center; gap: 9px; color: #7c827d; font-size: .76rem; }
-.note-dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: var(--coral); }
+.hero { position: relative; overflow: hidden; min-height: 790px; padding: 22px max(22px, calc((100vw - 1180px) / 2)) 0; background: var(--blush); border-radius: 0 0 54px 54px; }
+.hero::before, .hero::after { content: ""; position: absolute; border-radius: 50%; pointer-events: none; }
+.hero::before { width: 360px; height: 360px; top: 115px; right: -190px; border: 70px solid var(--peach); opacity: .45; }
+.hero::after { width: 180px; height: 180px; bottom: 20px; left: -100px; background: var(--yellow); opacity: .75; }
+.topbar { position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 18px; max-width: 1180px; margin: auto; padding: 7px 0; }
+.brand { color: var(--ink); font: 800 1.85rem/1 "Baloo Tamma 2", sans-serif; letter-spacing: -.05em; text-decoration: none; }
+.brand span, .footer-mark span { color: var(--orange); }
+.view-toggle { display: inline-flex; gap: 5px; padding: 5px; border: 2px solid var(--ink); border-radius: 999px; background: var(--white); box-shadow: 4px 5px 0 var(--ink); }
+.view-button { border: 0; border-radius: 999px; padding: 10px 17px; color: var(--ink); background: transparent; font-size: .76rem; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: transform .18s, background .18s, color .18s; }
+.view-button:hover { transform: translateY(-1px); }
+.view-button.is-active { color: var(--white); background: var(--orange); }
 
-main { background: var(--white); }
-.view-panel { max-width: 960px; margin: auto; padding: 70px 20px 86px; }
-.section-intro { max-width: 600px; margin-bottom: 32px; }
-.section-intro h2 { font-size: clamp(2.8rem, 13vw, 4.8rem); }
-.section-intro > p:last-child { color: var(--muted); font-size: .98rem; margin: 18px 0 0; }
-.field-grid { display: grid; gap: 20px; }
-.field { display: flex; flex-direction: column; gap: 8px; font-size: .78rem; font-weight: 800; letter-spacing: .025em; }
-.field-title i { color: var(--coral); font-style: normal; }
-.field-bubble, .file-bubble { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 60px; padding: 9px 15px; border: 1px solid var(--line); border-radius: 22px; background: #fffdfb; transition: .2s; }
-.field-bubble:focus-within, .file-bubble:focus-within { border-color: var(--coral); box-shadow: 0 0 0 4px rgba(216, 111, 84, .1); }
-.field-icon { display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 auto; border-radius: 50%; color: var(--coral); background: var(--peach-light); font-size: .9rem; }
-input { min-width: 0; width: 100%; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 1rem; }
-input::placeholder { color: #aaa298; }
-input[type="datetime-local"] { font-size: .92rem; }
+.hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1.03fr) minmax(420px, .97fr); align-items: center; gap: 42px; max-width: 1180px; min-height: 650px; margin: auto; padding: 46px 0 75px; }
+.hero-copy { max-width: 660px; }
+.eyebrow, .kicker { margin: 0 0 13px; color: var(--orange); font-weight: 800; font-size: .77rem; letter-spacing: .14em; text-transform: uppercase; }
+.eyebrow { display: inline-flex; align-items: center; gap: 9px; padding: 8px 14px; color: var(--ink); background: var(--yellow); border: 2px solid var(--ink); border-radius: 999px; box-shadow: 3px 4px 0 var(--ink); }
+h1, h2, .calendar-card strong { font-family: "Baloo Tamma 2", sans-serif; }
+h1 { margin: 24px 0 6px; font-size: clamp(4.4rem, 8.2vw, 7.8rem); font-weight: 800; letter-spacing: -.065em; line-height: .83; }
+h1 span, h2 span { color: var(--orange); }
+.intro { max-width: 580px; margin: 27px 0 31px; font-size: 1.08rem; }
+.hero-actions { display: flex; align-items: center; gap: 23px; }
+.hero-cta, .submit-button, .secondary-cta { display: inline-flex; align-items: center; justify-content: center; gap: 15px; border: 2px solid var(--ink); border-radius: 999px; color: var(--white); background: var(--orange); padding: 15px 23px; font-weight: 800; text-transform: uppercase; cursor: pointer; box-shadow: 6px 7px 0 var(--ink); transition: transform .18s, box-shadow .18s, background .18s; }
+.hero-cta:hover, .submit-button:hover, .secondary-cta:hover { background: var(--orange-dark); transform: translate(2px, 2px); box-shadow: 4px 5px 0 var(--ink); }
+.hero-cta span { font-size: 1.3rem; }
+.hero-note { display: flex; align-items: center; gap: 9px; color: #544d49; font-size: .77rem; font-weight: 700; line-height: 1.25; }
+.note-dot { display: grid; place-items: center; width: 33px; height: 33px; border: 2px solid var(--ink); border-radius: 50%; color: var(--ink); background: var(--green); font-weight: 900; }
+
+.hero-art { position: relative; min-height: 500px; }
+.calendar-card { position: absolute; z-index: 3; top: 60px; left: 44px; display: flex; flex-direction: column; align-items: center; width: 325px; height: 355px; padding: 47px 20px 20px; border: 4px solid var(--ink); border-radius: 36px; background: var(--white); box-shadow: 15px 17px 0 var(--ink); transform: rotate(-4deg); }
+.calendar-card::before { content: ""; position: absolute; inset: 48px 0 auto; height: 4px; background: var(--ink); }
+.calendar-rings { position: absolute; top: -19px; display: flex; gap: 160px; }
+.calendar-rings i { width: 18px; height: 46px; border: 4px solid var(--ink); border-radius: 10px; background: var(--yellow); }
+.calendar-month { margin-top: 17px; padding: 5px 13px; border-radius: 999px; color: var(--white); background: var(--orange); font-size: .72rem; font-weight: 800; letter-spacing: .12em; }
+.calendar-card strong { margin-top: -2px; color: var(--ink); font-size: 10rem; line-height: 1; }
+.calendar-caption { margin-top: -18px; color: var(--muted); font-size: .75rem; font-weight: 700; text-transform: uppercase; }
+.sun-bubble { position: absolute; z-index: 4; top: 12px; right: 0; display: grid; place-items: center; width: 132px; height: 132px; border: 3px solid var(--ink); border-radius: 46% 54% 51% 49%; background: var(--yellow); box-shadow: 6px 7px 0 var(--ink); font: 800 1.1rem/1.05 "Baloo Tamma 2", sans-serif; text-align: center; transform: rotate(9deg); }
+.baby-block { position: absolute; z-index: 5; bottom: 24px; display: grid; place-items: center; width: 95px; height: 95px; border: 3px solid var(--ink); border-radius: 20px; font: 800 3.4rem/1 "Baloo Tamma 2", sans-serif; box-shadow: 7px 8px 0 var(--ink); }
+.block-e { left: 19px; background: var(--blue); transform: rotate(-8deg); }
+.block-m { left: 123px; bottom: 8px; background: var(--green); transform: rotate(4deg); }
+.block-i { left: 229px; bottom: 27px; background: var(--pink); transform: rotate(-3deg); }
+.doodle { position: absolute; z-index: 6; font-size: 2.7rem; }
+.doodle-star { top: 182px; right: 12px; color: var(--orange); transform: rotate(12deg); }
+.doodle-heart { bottom: 110px; right: 26px; color: var(--pink); transform: rotate(14deg); }
+.ticker { position: absolute; z-index: 8; bottom: 0; left: -2%; display: flex; align-items: center; justify-content: center; gap: 30px; width: 104%; min-height: 55px; border-block: 3px solid var(--ink); color: var(--ink); background: var(--yellow); font: 800 .85rem "Baloo Tamma 2", sans-serif; letter-spacing: .1em; transform: rotate(-1deg); white-space: nowrap; }
+.ticker i { color: var(--orange); font-style: normal; }
+
+main { background: var(--cream); }
+.view-panel { margin: auto; padding: 105px max(22px, calc((100vw - 1080px) / 2)) 120px; }
+.participate-panel { display: grid; grid-template-columns: minmax(260px, .7fr) minmax(560px, 1.3fr); align-items: start; gap: 68px; background: var(--cream); }
+.section-intro { position: sticky; top: 30px; display: grid; grid-template-columns: 58px 1fr; gap: 18px; }
+.step-badge { display: grid; place-items: center; width: 58px; height: 58px; border: 2px solid var(--ink); border-radius: 50%; background: var(--yellow); box-shadow: 4px 5px 0 var(--ink); font: 800 1rem "Baloo Tamma 2", sans-serif; }
+.step-badge.blue { background: var(--blue); }
+.section-intro h2 { margin: 0; font-size: clamp(3rem, 5.5vw, 5.2rem); font-weight: 800; letter-spacing: -.045em; line-height: .83; }
+.section-intro p:last-child { max-width: 390px; margin: 24px 0 0; color: var(--muted); font-size: .94rem; }
+
+#guess-form { position: relative; padding: 30px; border: 3px solid var(--ink); border-radius: 34px; background: var(--blush); box-shadow: 13px 15px 0 var(--ink); }
+#guess-form::before { content: "♥"; position: absolute; top: -24px; right: 28px; display: grid; place-items: center; width: 54px; height: 54px; border: 3px solid var(--ink); border-radius: 50%; color: var(--white); background: var(--pink); font-size: 1.25rem; transform: rotate(9deg); }
+.form-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 25px; padding-bottom: 17px; border-bottom: 2px dashed var(--peach); }
+.form-heading div { display: flex; align-items: center; gap: 8px; font: 700 1.2rem "Baloo Tamma 2", sans-serif; }
+.form-heading div span { color: var(--orange); }
+.required-note { color: var(--muted); font-size: .68rem; font-weight: 700; text-transform: uppercase; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.field { display: flex; flex-direction: column; gap: 8px; font-size: .76rem; font-weight: 800; }
+.field-title { padding-left: 5px; text-transform: uppercase; letter-spacing: .055em; }
+.field-title i { color: var(--orange); font-style: normal; }
+.field-bubble, .file-bubble { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 59px; padding: 8px 13px; border: 2px solid transparent; border-radius: 20px; background: var(--white); transition: border .18s, box-shadow .18s; }
+.field-bubble:hover, .file-bubble:hover { border-color: var(--peach); }
+.field-bubble:focus-within, .file-bubble:focus-within { border-color: var(--orange); box-shadow: 0 0 0 4px rgba(242,72,10,.13); }
+.field-icon { display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 auto; border: 2px solid var(--ink); border-radius: 50%; color: var(--ink); background: var(--yellow); font-weight: 800; }
+.field:nth-child(2) .field-icon { background: var(--blue); }
+.field:nth-child(3) .field-icon { background: var(--green); }
+.field:nth-child(4) .field-icon { background: var(--peach); }
+input, select { min-width: 0; width: 100%; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: .93rem; }
+input::placeholder { color: #978d87; }
+.datetime-pair { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(122px, .65fr); gap: 8px; }
+.datetime-pair .field-bubble { gap: 6px; padding: 6px 8px; }
+.datetime-pair .field-icon { width: 28px; height: 28px; font-size: .72rem; }
+.date-control select { cursor: pointer; font-size: .82rem; }
+.time-control input { font-size: .78rem; }
+.date-legend span { color: var(--orange); }
 .input-suffix { display: flex; align-items: center; width: 100%; gap: 8px; }
-.input-suffix b { color: #8e918e; font-size: .74rem; white-space: nowrap; }
-small { display: block; color: #7b827e; font-weight: 400; letter-spacing: 0; }
-.bet-card { margin: 30px 0 25px; padding: 19px; border: 1px solid var(--line); border-radius: 24px; background: #fffaf5; }
-.bet-toggle { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 12px; cursor: pointer; }
+.input-suffix b { color: var(--muted); font-size: .68rem; white-space: nowrap; text-transform: uppercase; }
+small { display: block; padding-left: 5px; color: var(--muted); font-size: .7rem; font-weight: 400; letter-spacing: 0; }
+.bet-card { margin: 22px 0 17px; padding: 18px; border: 2px dashed var(--ink); border-radius: 24px; background: var(--yellow); }
+.bet-copy { display: grid; grid-template-columns: 42px 1fr; gap: 12px; align-items: start; margin: -2px 0 17px; padding-bottom: 17px; border-bottom: 2px dashed rgba(23,23,23,.25); }
+.bet-copy-icon { display: grid; place-items: center; width: 42px; height: 42px; border: 2px solid var(--ink); border-radius: 13px; background: var(--white); box-shadow: 3px 4px 0 var(--ink); }
+.bet-copy p { margin: 0; color: #493f32; font-size: .77rem; line-height: 1.55; }
+.bet-toggle { display: grid; grid-template-columns: 46px 1fr auto; align-items: center; gap: 12px; cursor: pointer; }
 .bet-toggle input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-.switch { position: relative; width: 42px; height: 25px; border-radius: 999px; background: #d9d0c8; transition: .2s; }
-.switch::after { content: ""; position: absolute; top: 4px; left: 4px; width: 17px; height: 17px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: .2s; }
-.bet-toggle input:checked + .switch { background: var(--sage); }
-.bet-toggle input:checked + .switch::after { transform: translateX(17px); }
-.bet-toggle input:focus-visible + .switch { outline: 3px solid rgba(216, 111, 84, .3); outline-offset: 3px; }
-.bet-toggle strong { display: block; font-size: .93rem; }
-.bet-toggle small { margin-top: 2px; }
-.receipt-area { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+.switch { position: relative; width: 46px; height: 28px; border: 2px solid var(--ink); border-radius: 999px; background: var(--white); }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border: 2px solid var(--ink); border-radius: 50%; background: var(--peach); transition: transform .18s; }
+.bet-toggle input:checked + .switch { background: var(--green); }
+.bet-toggle input:checked + .switch::after { transform: translateX(18px); background: var(--white); }
+.bet-toggle input:focus-visible + .switch { outline: 3px solid var(--blue); outline-offset: 3px; }
+.bet-toggle strong { display: block; font: 700 1rem "Baloo Tamma 2", sans-serif; }
+.bet-toggle small { padding: 0; margin-top: -3px; color: #5b5144; }
+.bet-sticker { display: grid; place-items: center; width: 40px; height: 40px; border: 2px solid var(--ink); border-radius: 50%; color: var(--white); background: var(--orange); font-weight: 900; transform: rotate(8deg); }
+.receipt-area { margin-top: 18px; padding-top: 18px; border-top: 2px dashed rgba(23,23,23,.25); }
+.transfer-alias { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; padding: 11px 13px; border: 2px solid var(--ink); border-radius: 15px; background: var(--white); }
+.transfer-alias span { color: var(--muted); font-size: .68rem; font-weight: 800; text-transform: uppercase; }
+.transfer-alias strong { color: var(--orange); font: 800 1.08rem "Baloo Tamma 2", sans-serif; letter-spacing: .08em; }
 .file-bubble { position: relative; cursor: pointer; }
 .file-bubble input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.file-bubble span { color: var(--coral); font-weight: 800; }
-.turnstile { min-height: 65px; margin: 18px 0 2px; }
+.file-bubble span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-bubble b { margin-left: auto; color: var(--orange); font-size: .7rem; }
+.turnstile { min-height: 65px; margin: 16px 0 0; }
 .honeypot { position: absolute; left: -10000px; }
-.submit-button { width: 100%; display: flex; justify-content: center; gap: 14px; border: 0; color: white; background: var(--ink); padding: 17px 22px; font-weight: 800; cursor: pointer; transition: .2s; }
+.submit-button { width: 100%; border-radius: 18px; padding: 17px 22px; box-shadow: 5px 6px 0 var(--ink); }
 .submit-button:disabled { opacity: .55; cursor: wait; }
-.submit-button span { color: var(--peach); font-size: 1.2rem; }
-.privacy { color: #858b86; font-size: .73rem; text-align: center; }
-.form-message { min-height: 24px; margin: 10px 0; color: var(--muted); font-weight: 700; text-align: center; }
-.form-message.error { color: #aa3f34; }
-.form-message.success { color: #4e7757; }
+.submit-button span { color: var(--yellow); font-size: 1.2rem; }
+.privacy { margin: 16px 0 0; color: var(--muted); font-size: .7rem; text-align: center; }
+.form-message { min-height: 24px; margin: 6px 0; font-size: .8rem; font-weight: 800; text-align: center; }
+.form-message.error { color: #a32921; }
+.form-message.success { color: #2c7042; }
 
-.leaderboard-panel { max-width: none; padding-inline: max(20px, calc((100% - 1056px) / 2)); background: #f7f1e9; }
-.board-intro { display: flex; align-items: flex-end; justify-content: space-between; max-width: none; }
-.refresh { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 auto; border: 1px solid #d6cbbf; border-radius: 50%; background: transparent; color: var(--ink); font-size: 1.3rem; cursor: pointer; }
-.stats { display: flex; flex-wrap: wrap; gap: 7px; margin: -13px 0 25px; color: #747b76; font-size: .82rem; }
-.stats b { color: var(--coral); }
-.leaderboard-list { display: grid; gap: 10px; }
-.guess-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 4px 12px; align-items: center; padding: 16px; border-left: 3px solid transparent; background: white; box-shadow: 0 3px 16px rgba(50, 44, 38, .04); }
-.guess-row:hover { border-color: var(--peach); }
-.rank { grid-row: 1 / span 2; align-self: center; font: 1.35rem Iowan Old Style, "Palatino Linotype", Georgia, serif; color: #c49f83; }
-.name { font-weight: 800; }
-.date, .weight { font-size: .83rem; }
-.date { color: var(--muted); }
-.weight { grid-column: 3; grid-row: 1; }
-.bet-badge { grid-column: 3; grid-row: 2; justify-self: end; padding: 4px 7px; border-radius: 20px; color: #58705b; background: #eef4ed; font-size: .65rem; font-weight: 800; }
-.empty, .loading { padding: 40px 12px; color: #7d827f; text-align: center; }
-.secondary-cta { margin-top: 34px; color: var(--ink); background: transparent; border: 1px solid var(--ink); }
-.secondary-cta:hover { color: white; }
-footer { padding: 56px 20px; color: #dfe6df; background: var(--ink); text-align: center; }
-footer span, footer strong { display: block; }
-footer span { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; opacity: .65; }
-footer strong { margin-top: 7px; color: #f5c5a5; font: italic 2rem Iowan Old Style, "Palatino Linotype", Georgia, serif; }
+.leaderboard-panel { min-height: 760px; background: var(--yellow); }
+.leaderboard-panel .section-intro { position: static; grid-template-columns: 58px 1fr auto; align-items: start; }
+.board-intro .refresh { align-self: center; }
+.refresh { display: grid; place-items: center; width: 50px; height: 50px; border: 2px solid var(--ink); border-radius: 50%; background: var(--white); box-shadow: 4px 5px 0 var(--ink); color: var(--ink); font-size: 1.4rem; cursor: pointer; }
+.stats { display: inline-flex; flex-wrap: wrap; gap: 8px; margin: 32px 0 18px 76px; padding: 8px 13px; border: 2px solid var(--ink); border-radius: 999px; background: var(--white); font-size: .76rem; font-weight: 700; }
+.stats b { color: var(--orange); }
+.leaderboard-list { display: grid; gap: 11px; margin-left: 76px; }
+.guess-row { display: grid; grid-template-columns: 55px 1.2fr 1fr .65fr auto; align-items: center; gap: 16px; padding: 17px 20px; border: 2px solid var(--ink); border-radius: 18px; background: var(--white); box-shadow: 5px 6px 0 rgba(23,23,23,.18); transition: transform .18s; }
+.guess-row:hover { transform: translateY(-2px) rotate(-.15deg); }
+.rank { display: grid; place-items: center; width: 43px; height: 43px; border: 2px solid var(--ink); border-radius: 12px; background: var(--peach); font: 800 1rem "Baloo Tamma 2", sans-serif; }
+.name { font: 700 1rem "Baloo Tamma 2", sans-serif; }
+.date, .weight { color: var(--muted); font-size: .82rem; }
+.weight { color: var(--ink); font-weight: 800; }
+.bet-badge { justify-self: end; padding: 5px 9px; border: 2px solid var(--ink); border-radius: 999px; background: var(--green); font-size: .61rem; font-weight: 800; }
+.empty, .loading { padding: 40px 12px; border: 2px dashed var(--ink); border-radius: 20px; background: rgba(255,255,255,.45); text-align: center; }
+.secondary-cta { margin: 32px 0 0 76px; color: var(--ink); background: var(--white); }
+.secondary-cta:hover { color: var(--white); }
+
+footer { display: flex; align-items: center; justify-content: center; gap: 24px; min-height: 170px; padding: 42px 22px; color: var(--white); background: var(--ink); text-align: center; }
+.footer-mark { font: 800 1.6rem "Baloo Tamma 2", sans-serif; }
+footer p { margin: 0; color: #d9d1cc; font-size: .8rem; }
+.footer-heart { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; color: var(--ink); background: var(--pink); }
 [hidden] { display: none !important; }
 
-@media (min-width: 681px) {
-  .hero { padding: 28px 32px 70px; }
-  .view-button { padding-inline: 15px; font-size: .78rem; }
-  .hero-copy { padding-top: 0; }
-  .intro { font-size: 1.12rem; }
-  .view-panel { padding: 100px 32px; }
-  .field-grid { grid-template-columns: 1fr 1fr; gap: 24px 28px; }
-  .bet-card { padding: 22px 25px; }
-  .guess-row { grid-template-columns: 52px 1.2fr 1fr .7fr auto; gap: 18px; padding: 19px 22px; }
-  .rank { grid-row: auto; }
-  .date, .weight { font-size: .9rem; }
-  .date { grid-column: auto; grid-row: auto; }
-  .weight { grid-column: auto; grid-row: auto; }
-  .bet-badge { grid-column: auto; grid-row: auto; }
+@media (max-width: 900px) {
+  .hero { min-height: auto; }
+  .hero-grid { grid-template-columns: 1fr; padding-top: 70px; }
+  .hero-copy { max-width: 720px; }
+  .hero-art { width: min(520px, 100%); margin: -5px auto 40px; }
+  .participate-panel { grid-template-columns: 1fr; gap: 45px; }
+  .section-intro { position: static; }
 }
 
-@media (max-width: 430px) {
-  .topbar { align-items: stretch; flex-direction: column; gap: 13px; }
+@media (max-width: 680px) {
+  .hero { padding-inline: 18px; border-radius: 0 0 35px 35px; }
+  .topbar { align-items: stretch; flex-direction: column; }
+  .brand { align-self: center; }
   .view-toggle { width: 100%; }
   .view-button { flex: 1; }
+  .hero-grid { gap: 20px; min-height: auto; padding: 58px 0 70px; }
+  h1 { font-size: clamp(3.9rem, 20vw, 5.8rem); }
+  .hero-actions { align-items: flex-start; flex-direction: column; }
+  .hero-art { min-height: 410px; transform: scale(.86); transform-origin: center top; margin-bottom: -45px; }
+  .calendar-card { left: 50%; width: 285px; height: 320px; transform: translateX(-54%) rotate(-4deg); }
+  .calendar-card strong { font-size: 8.5rem; }
+  .sun-bubble { right: -5px; width: 105px; height: 105px; font-size: .9rem; }
+  .baby-block { width: 80px; height: 80px; font-size: 2.8rem; }
+  .block-e { left: calc(50% - 146px); }
+  .block-m { left: calc(50% - 55px); }
+  .block-i { left: calc(50% + 37px); }
+  .ticker { justify-content: flex-start; gap: 18px; padding-left: 14px; font-size: .67rem; }
+  .view-panel { padding: 78px 18px 90px; }
+  .section-intro, .leaderboard-panel .section-intro { grid-template-columns: 48px 1fr; gap: 13px; }
+  .step-badge { width: 48px; height: 48px; }
+  .section-intro h2 { font-size: 3.25rem; }
+  .board-intro .refresh { grid-column: 2; justify-self: start; }
+  #guess-form { padding: 24px 17px; border-radius: 26px; box-shadow: 8px 10px 0 var(--ink); }
+  .field-grid { grid-template-columns: 1fr; }
+  .datetime-pair { grid-template-columns: 1fr; }
+  .form-heading { align-items: flex-start; flex-direction: column; }
+  .bet-toggle { grid-template-columns: 46px 1fr; }
+  .bet-sticker { display: none; }
+  .stats, .leaderboard-list, .secondary-cta { margin-left: 0; }
+  .stats { border-radius: 18px; }
+  .guess-row { grid-template-columns: 46px 1fr auto; gap: 4px 11px; padding: 14px; }
+  .rank { grid-row: 1 / span 2; width: 40px; height: 40px; }
+  .date { grid-column: 2; }
+  .weight { grid-column: 3; grid-row: 1; }
+  .bet-badge { grid-column: 3; grid-row: 2; }
+  footer { flex-direction: column; gap: 12px; }
+}
+
+@media (max-width: 390px) {
+  .hero-art { margin-left: -10px; margin-right: -10px; }
+  .sun-bubble { right: -17px; }
+  .doodle-heart { right: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
