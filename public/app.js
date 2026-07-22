@@ -21,23 +21,21 @@ function loadTurnstileScript() {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector('script[data-turnstile-script]');
     const script = existing || document.createElement('script');
-    const timer = window.setTimeout(() => reject(new Error('Turnstile no respondió.')), 12000);
-    const finish = () => {
-      window.clearTimeout(timer);
-      window.turnstile ? resolve() : reject(new Error('Turnstile no se pudo iniciar.'));
+    const deadline = Date.now() + 12000;
+    const waitUntilReady = () => {
+      if (window.turnstile) return resolve();
+      if (Date.now() >= deadline) return reject(new Error('Turnstile no respondió.'));
+      window.setTimeout(waitUntilReady, 50);
     };
-    script.addEventListener('load', finish, { once:true });
-    script.addEventListener('error', () => {
-      window.clearTimeout(timer);
-      reject(new Error('No pudimos cargar la verificación anti-bots.'));
-    }, { once:true });
+    script.addEventListener('load', waitUntilReady, { once:true });
+    script.addEventListener('error', () => reject(new Error('No pudimos cargar la verificación anti-bots.')), { once:true });
     if (!existing) {
       script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
       script.async = true;
       script.defer = true;
       script.dataset.turnstileScript = '';
       document.head.append(script);
-    }
+    } else waitUntilReady();
   });
 }
 
