@@ -1,0 +1,15 @@
+{
+  "name": "cuando-nace-emilia",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public --project-name cuandonaceemilia",
+    "test": "node --test",
+    "check": "node --check functions/api/guesses.js && node --check public/app.js"
+  },
+  "devDependencies": {
+    "wrangler": "^4.113.0"
+  }
+}
