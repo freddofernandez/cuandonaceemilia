@@ -172,7 +172,9 @@ async function loadGuesses() {
         <span class="name">${escapeHtml(guess.nickname)}</span>
         <time class="date" datetime="${escapeHtml(guess.birth_datetime)}">${argentinaDate.format(parseArgentinaDate(guess.birth_datetime))}</time>
         <span class="weight">${Number(guess.weight_grams).toLocaleString('es-AR')} g</span>
-        ${guess.wants_bet ? '<span class="bet-badge">VAQUITA ♡</span>' : ''}
+        ${guess.wants_bet
+          ? '<span class="bet-badge">VAQUITA ♡</span>'
+          : '<span class="bet-badge bet-badge-placeholder" aria-hidden="true">VAQUITA ♡</span>'}
       </article>`).join('') : '<p class="empty">Todavía no hay predicciones. ¡Podés inaugurar la lista! 🌼</p>';
   } catch {
     leaderboardList.innerHTML = '<p class="empty">No pudimos cargar las predicciones. Probá nuevamente en un ratito.</p>';
