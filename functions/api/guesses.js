@@ -85,6 +85,7 @@ export async function onRequestPost({ request, env }) {
     if (!createResponse.ok) {
       if (created.code === '23505') {
         const details = `${created.message || ''} ${created.details || ''}`;
+        if (details.includes('ip_hash')) return json({ error:'Ya recibimos una predicción desde tu conexión.' }, 409);
         const label = details.includes('nickname') ? 'Ese apodo' : details.includes('email') ? 'Ese email' : details.includes('birth_datetime') ? 'Esa fecha y hora' : details.includes('weight_grams') ? 'Ese peso' : details.includes('ip_hash') ? 'Ya recibimos una predicción desde tu conexión' : 'Ese dato';
         return json({ error:`${label} ya está en uso. Probá con otro.` }, 409);
       }

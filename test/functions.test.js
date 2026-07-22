@@ -86,6 +86,13 @@ test('database uniqueness conflicts become friendly HTTP 409 responses', async (
   assert.match((await response.json()).error, /Ese peso ya está en uso/);
 });
 
+test('duplicate IP conflict explains the one-prediction policy naturally', async () => {
+  globalThis.fetch = async () => Response.json({ code:'23505', message:'duplicate key', details:'ip_hash already exists' }, { status:409 });
+  const response = await onRequestPost({ request:submission(), env });
+  assert.equal(response.status, 409);
+  assert.equal((await response.json()).error, 'Ya recibimos una predicción desde tu conexión.');
+});
+
 test('bet receipt rejects executable and oversized file types before persistence', async () => {
   let called = false;
   globalThis.fetch = async () => { called = true; return Response.json([]); };
