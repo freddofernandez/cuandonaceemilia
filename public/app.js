@@ -16,14 +16,45 @@ betToggle.addEventListener('change', () => {
   receiptInput.required = betToggle.checked;
 });
 
+function loadTurnstileScript() {
+  if (window.turnstile) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-turnstile-script]');
+    const script = existing || document.createElement('script');
+    const timer = window.setTimeout(() => reject(new Error('Turnstile no respondió.')), 12000);
+    const finish = () => {
+      window.clearTimeout(timer);
+      window.turnstile ? resolve() : reject(new Error('Turnstile no se pudo iniciar.'));
+    };
+    script.addEventListener('load', finish, { once:true });
+    script.addEventListener('error', () => {
+      window.clearTimeout(timer);
+      reject(new Error('No pudimos cargar la verificación anti-bots.'));
+    }, { once:true });
+    if (!existing) {
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.dataset.turnstileScript = '';
+      document.head.append(script);
+    }
+  });
+}
+
 async function loadConfig() {
   try {
     const response = await fetch('/api/config');
+    if (!response.ok) throw new Error();
     const config = await response.json();
-    if (config.turnstileSiteKey && window.turnstile) {
+    if (config.turnstileSiteKey) {
+      await loadTurnstileScript();
       turnstileWidget = window.turnstile.render('#turnstile', { sitekey: config.turnstileSiteKey, theme:'light', size:'flexible' });
     }
-  } catch { /* Server still enforces all configured checks. */ }
+  } catch {
+    message.className = 'form-message error';
+    message.textContent = 'No pudimos iniciar la protección anti-bots. Recargá la página para participar.';
+    submitButton.disabled = true;
+  }
 }
 
 async function loadGuesses() {
@@ -74,5 +105,5 @@ form.addEventListener('submit', async (event) => {
 });
 
 document.querySelector('#refresh-button').addEventListener('click', loadGuesses);
-window.addEventListener('load', loadConfig);
+loadConfig();
 loadGuesses();
