@@ -53,12 +53,12 @@ test('valid prediction is inserted with normalized identity and hashed IP', asyn
     inserted = JSON.parse(init.body);
     return Response.json([{ id:'7a908e56-40f2-4d64-a2a4-b0cc2a6385c1' }]);
   };
-  const response = await onRequestPost({ request:submission({ nickname:'  Tío   Juan  ', email:'JUAN@EXAMPLE.COM' }), env });
+  const response = await onRequestPost({ request:submission({ nickname:'  Tío   Juan  ', email:'JUAN@EXAMPLE.COM', birth_datetime:'2027-01-15T11:00' }), env });
   assert.equal(response.status, 201);
   assert.equal(inserted.nickname, 'Tío Juan');
   assert.equal(inserted.email, 'juan@example.com');
   assert.match(inserted.ip_hash, /^[a-f0-9]{64}$/);
-  assert.equal(inserted.birth_datetime.endsWith(':00.000Z'), true);
+  assert.equal(inserted.birth_datetime, '2027-01-15T11:00:00');
 });
 
 test('production Turnstile verification uses the canonical siteverify contract', async () => {

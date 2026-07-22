@@ -5,7 +5,7 @@ create table if not exists public.emilia_guesses (
   id uuid primary key default gen_random_uuid(),
   nickname text not null,
   email text not null,
-  birth_datetime timestamptz not null,
+  birth_datetime timestamp without time zone not null,
   weight_grams integer not null check (weight_grams between 1500 and 6000),
   wants_bet boolean not null default false,
   receipt_path text,

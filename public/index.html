@@ -131,6 +131,14 @@
         <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
         <button id="submit-button" class="submit-button" type="submit">Guardar mi predicción <span aria-hidden="true">♥</span></button>
         <p class="privacy"><span aria-hidden="true">🔒</span> Tu email y comprobante nunca se muestran públicamente.</p>
+        <div id="already-participated" class="participation-overlay" hidden role="alertdialog" aria-labelledby="already-participated-title" aria-describedby="already-participated-copy">
+          <div class="participation-overlay-card">
+            <span class="participation-overlay-icon" aria-hidden="true">✓</span>
+            <h3 id="already-participated-title">¡Ya participaste!</h3>
+            <p id="already-participated-copy">Podés ir a ver las predicciones.</p>
+            <a class="participation-overlay-link" href="#leaderboard" data-view="leaderboard">Ver predicciones <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
       </form>
     </section>
 

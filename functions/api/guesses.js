@@ -82,7 +82,7 @@ export async function onRequestPost({ request, env }) {
     const createResponse = await supabase(env, `/rest/v1/${TABLE}`, {
       method:'POST',
       headers:{'Content-Type':'application/json','Prefer':'return=representation'},
-      body:JSON.stringify({ nickname, email, birth_datetime:birthDate.toISOString(), weight_grams:weight, wants_bet:wantsBet, ip_hash:hash })
+      body:JSON.stringify({ nickname, email, birth_datetime:`${localDate}:00`, weight_grams:weight, wants_bet:wantsBet, ip_hash:hash })
     });
     const created = await createResponse.json().catch(() => ({}));
     if (!createResponse.ok) {

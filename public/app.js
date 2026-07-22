@@ -8,6 +8,7 @@ const guessTime = document.querySelector('#guess-time');
 const birthDatetime = document.querySelector('#birth-datetime');
 const message = document.querySelector('#form-message');
 const submitButton = document.querySelector('#submit-button');
+const alreadyParticipated = document.querySelector('#already-participated');
 const leaderboardList = document.querySelector('#leaderboard-list');
 const stats = document.querySelector('#stats');
 const viewButtons = [...document.querySelectorAll('[data-view]')];
@@ -18,10 +19,15 @@ const argentinaDate = new Intl.DateTimeFormat('es-AR', {
   timeZone: 'America/Argentina/Cordoba', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
 });
 const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+const parseArgentinaDate = (value) => {
+  const normalized = String(value).replace(' ', 'T');
+  return new Date(/[zZ]|[+-]\d{2}:\d{2}$/.test(normalized) ? normalized : `${normalized}-03:00`);
+};
 
 let turnstileWidgetId = null;
 let turnstileConfigured = false;
 let turnstileApiPromise = null;
+let formLocked = false;
 
 function populateGuessDates() {
   const start = new Date(2026, 6, 23);
@@ -63,6 +69,13 @@ receiptInput.addEventListener('change', () => {
 function setMessage(type, text) {
   message.className = `form-message${type ? ` ${type}` : ''}`;
   message.textContent = text;
+}
+
+function showAlreadyParticipated() {
+  formLocked = true;
+  alreadyParticipated.hidden = false;
+  alreadyParticipated.setAttribute('aria-hidden', 'false');
+  alreadyParticipated.querySelector('a').focus({ preventScroll: true });
 }
 
 function loadTurnstileApi() {
@@ -143,7 +156,7 @@ async function loadGuesses() {
       <article class="guess-row">
         <span class="rank">${String(index + 1).padStart(2, '0')}</span>
         <span class="name">${escapeHtml(guess.nickname)}</span>
-        <time class="date" datetime="${escapeHtml(guess.birth_datetime)}">${argentinaDate.format(new Date(guess.birth_datetime))}</time>
+        <time class="date" datetime="${escapeHtml(guess.birth_datetime)}">${argentinaDate.format(parseArgentinaDate(guess.birth_datetime))}</time>
         <span class="weight">${Number(guess.weight_grams).toLocaleString('es-AR')} g</span>
         ${guess.wants_bet ? '<span class="bet-badge">VAQUITA ♡</span>' : ''}
       </article>`).join('') : '<p class="empty">Todavía no hay predicciones. ¡Podés inaugurar la lista! 🌼</p>';
@@ -189,6 +202,10 @@ form.addEventListener('submit', async (event) => {
   try {
     const response = await fetch('/api/guesses', { method: 'POST', body: new FormData(form) });
     const body = await response.json();
+    if (response.status === 409 && /predicción desde tu conexión/i.test(body.error || '')) {
+      showAlreadyParticipated();
+      return;
+    }
     if (!response.ok) throw new Error(body.error || 'No pudimos guardar tu predicción.');
     form.reset();
     syncBirthDatetime();
@@ -201,7 +218,7 @@ form.addEventListener('submit', async (event) => {
     setMessage('error', error.message);
     resetTurnstile();
   } finally {
-    submitButton.disabled = false;
+    submitButton.disabled = formLocked;
     submitButton.childNodes[0].nodeValue = 'Guardar mi predicción ';
   }
 });
