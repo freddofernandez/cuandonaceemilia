@@ -47,7 +47,11 @@ function syncBetUI() {
 
 betToggle.addEventListener('change', syncBetUI);
 guessDate.addEventListener('change', syncBirthDatetime);
-guessTime.addEventListener('input', syncBirthDatetime);
+guessTime.addEventListener('input', () => {
+  const digits = guessTime.value.replace(/\D/g, '').slice(0, 4);
+  guessTime.value = digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
+  syncBirthDatetime();
+});
 window.addEventListener('pageshow', syncBetUI);
 
 receiptInput.addEventListener('change', () => {

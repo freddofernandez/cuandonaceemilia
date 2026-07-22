@@ -42,7 +42,6 @@
           <div class="calendar-rings"><i></i><i></i></div>
           <span class="calendar-month">MUY PRONTO</span>
           <strong>?</strong>
-          <span class="calendar-caption">día + hora + peso</span>
         </div>
         <div class="baby-block block-e">E</div>
         <div class="baby-block block-m">M</div>
@@ -92,7 +91,7 @@
               </label>
               <label class="field-bubble time-control">
                 <span class="field-icon" aria-hidden="true">◷</span>
-                <input id="guess-time" type="time" aria-label="Hora estimada de nacimiento" step="60" required>
+                <input id="guess-time" type="text" inputmode="numeric" autocomplete="off" aria-label="Hora estimada de nacimiento" pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]" maxlength="5" placeholder="HH:MM" title="Ingresá una hora válida en formato HH:MM" required>
               </label>
             </div>
             <input id="birth-datetime" name="birth_datetime" type="hidden">
