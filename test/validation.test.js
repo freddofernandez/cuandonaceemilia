@@ -27,11 +27,23 @@ test('Turnstile API has a single idempotent loader', async () => {
   assert.doesNotMatch(html, /id=["']turnstile["']/);
   assert.match(html, /id=["']turnstile-widget["']/);
   assert.match(html, /id=["']already-participated["']/);
-  assert.match(html, /Podés ir a ver las predicciones/);
+  assert.match(html, /Ya recibimos 5 predicciones desde esta conexión/);
   assert.equal((app.match(/challenges\.cloudflare\.com\/turnstile\/v0\/api\.js/g) || []).length, 1);
   assert.match(app, /typeof window\.turnstile\?\.render === 'function'/);
   assert.match(app, /if \(turnstileApiPromise\) return turnstileApiPromise/);
   assert.match(app, /script\[data-turnstile-api\]/);
-  assert.match(app, /response\.status === 409/);
-  assert.match(app, /showAlreadyParticipated\(\)/);
+  assert.match(app, /response\.status === 429/);
+  assert.match(app, /showSubmissionLimit\(\)/);
+  assert.match(app, /scope=ip-status/);
+});
+
+test('database schema and migration enforce five submissions per IP', async () => {
+  const [schema, migration] = await Promise.all([
+    readFile(new URL('../supabase/schema.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../supabase/migrations/20260722_ip_submission_limit.sql', import.meta.url), 'utf8')
+  ]);
+  assert.doesNotMatch(schema, /constraint emilia_ip_unique/);
+  assert.match(schema, /count\(\*\).*ip_hash = new\.ip_hash\) >= 5/s);
+  assert.match(migration, /drop constraint if exists emilia_ip_unique/);
+  assert.match(migration, /pg_advisory_xact_lock/);
 });

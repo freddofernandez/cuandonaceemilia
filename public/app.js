@@ -71,11 +71,23 @@ function setMessage(type, text) {
   message.textContent = text;
 }
 
-function showAlreadyParticipated() {
+function showSubmissionLimit() {
   formLocked = true;
+  [...form.elements].forEach((control) => { control.disabled = true; });
   alreadyParticipated.hidden = false;
   alreadyParticipated.setAttribute('aria-hidden', 'false');
   alreadyParticipated.querySelector('a').focus({ preventScroll: true });
+}
+
+async function loadSubmissionStatus() {
+  try {
+    const response = await fetch('/api/guesses?scope=ip-status');
+    if (!response.ok) return;
+    const status = await response.json();
+    if (status.limitReached) showSubmissionLimit();
+  } catch {
+    // A status check must not prevent participation when the API is temporarily unavailable.
+  }
 }
 
 function loadTurnstileApi() {
@@ -202,8 +214,8 @@ form.addEventListener('submit', async (event) => {
   try {
     const response = await fetch('/api/guesses', { method: 'POST', body: new FormData(form) });
     const body = await response.json();
-    if (response.status === 409 && /predicción desde tu conexión/i.test(body.error || '')) {
-      showAlreadyParticipated();
+    if (response.status === 429 && body.code === 'IP_SUBMISSION_LIMIT') {
+      showSubmissionLimit();
       return;
     }
     if (!response.ok) throw new Error(body.error || 'No pudimos guardar tu predicción.');
@@ -212,6 +224,7 @@ form.addEventListener('submit', async (event) => {
     syncBetUI();
     fileName.textContent = 'Elegir archivo';
     resetTurnstile();
+    if (body.limitReached) showSubmissionLimit();
     showView('leaderboard');
     document.querySelector('#leaderboard').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
   } catch (error) {
@@ -228,3 +241,4 @@ populateGuessDates();
 syncBetUI();
 showView(window.location.hash === '#leaderboard' ? 'leaderboard' : 'participate', false);
 loadConfig();
+loadSubmissionStatus();

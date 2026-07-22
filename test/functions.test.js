@@ -39,7 +39,7 @@ test('public leaderboard requests and returns only safe fields', async () => {
     requestedUrl = String(url);
     return Response.json([{ nickname:'Abu', birth_datetime:'2026-08-10T17:35:00Z', weight_grams:3300, wants_bet:false }]);
   };
-  const response = await onRequestGet({ env });
+  const response = await onRequestGet({ request:new Request('https://cuandonaceemilia.pages.dev/api/guesses'), env });
   assert.equal(response.status, 200);
   assert.match(requestedUrl, /select=nickname,birth_datetime,weight_grams,wants_bet/);
   assert.doesNotMatch(requestedUrl, /email|ip_hash|receipt_path/);
@@ -50,6 +50,7 @@ test('valid prediction is inserted with normalized identity and hashed IP', asyn
   let inserted;
   globalThis.fetch = async (url, init = {}) => {
     assert.equal(init.headers.apikey, env.SUPABASE_SECRET_KEY);
+    if ((init.method || 'GET') === 'GET') return Response.json([]);
     inserted = JSON.parse(init.body);
     return Response.json([{ id:'7a908e56-40f2-4d64-a2a4-b0cc2a6385c1' }]);
   };
@@ -67,6 +68,7 @@ test('production Turnstile verification uses the canonical siteverify contract',
   globalThis.fetch = async (url, init = {}) => {
     calls.push({ url:String(url), init });
     if (String(url).includes('/siteverify')) return Response.json({ success:true });
+    if ((init.method || 'GET') === 'GET') return Response.json([]);
     return Response.json([{ id:'7a908e56-40f2-4d64-a2a4-b0cc2a6385c1' }]);
   };
   const response = await onRequestPost({ request:submission({ turnstileToken:'valid-token' }), env:productionEnv });
@@ -81,6 +83,7 @@ test('receipt flow uploads privately and stores only its random path', async () 
   const calls = [];
   globalThis.fetch = async (url, init = {}) => {
     calls.push({ url:String(url), method:init.method || 'GET', body:init.body });
+    if ((init.method || 'GET') === 'GET') return Response.json([]);
     if (String(url).includes('/rest/v1/emilia_guesses') && init.method === 'POST') {
       return Response.json([{ id:'7a908e56-40f2-4d64-a2a4-b0cc2a6385c1' }]);
     }
@@ -97,17 +100,58 @@ test('receipt flow uploads privately and stores only its random path', async () 
 });
 
 test('database uniqueness conflicts become friendly HTTP 409 responses', async () => {
-  globalThis.fetch = async () => Response.json({ code:'23505', message:'duplicate key', details:'weight_grams already exists' }, { status:409 });
+  globalThis.fetch = async (_url, init = {}) => (init.method || 'GET') === 'GET'
+    ? Response.json([])
+    : Response.json({ code:'23505', message:'duplicate key', details:'weight_grams already exists' }, { status:409 });
   const response = await onRequestPost({ request:submission(), env });
   assert.equal(response.status, 409);
   assert.match((await response.json()).error, /Ese peso ya está en uso/);
 });
 
-test('duplicate IP conflict explains the one-prediction policy naturally', async () => {
-  globalThis.fetch = async () => Response.json({ code:'23505', message:'duplicate key', details:'ip_hash already exists' }, { status:409 });
+test('a connection with five predictions is blocked before insertion', async () => {
+  let insertCalled = false;
+  globalThis.fetch = async (_url, init = {}) => {
+    if ((init.method || 'GET') === 'GET') return Response.json(Array.from({ length:5 }, (_, id) => ({ id })));
+    insertCalled = true;
+    return Response.json([]);
+  };
   const response = await onRequestPost({ request:submission(), env });
-  assert.equal(response.status, 409);
-  assert.equal((await response.json()).error, 'Ya recibimos una predicción desde tu conexión.');
+  assert.equal(response.status, 429);
+  const body = await response.json();
+  assert.equal(body.code, 'IP_SUBMISSION_LIMIT');
+  assert.equal(body.limit, 5);
+  assert.equal(insertCalled, false);
+});
+
+test('the fifth prediction from one connection is accepted and reaches the limit', async () => {
+  let insertCalled = false;
+  globalThis.fetch = async (_url, init = {}) => {
+    if ((init.method || 'GET') === 'GET') return Response.json(Array.from({ length:4 }, (_, id) => ({ id })));
+    insertCalled = true;
+    return Response.json([{ id:'7a908e56-40f2-4d64-a2a4-b0cc2a6385c1' }]);
+  };
+  const response = await onRequestPost({ request:submission(), env });
+  assert.equal(response.status, 201);
+  assert.deepEqual(await response.json(), { ok:true, submissions:5, limit:5, limitReached:true });
+  assert.equal(insertCalled, true);
+});
+
+test('the IP status endpoint reports whether the form should be blocked', async () => {
+  globalThis.fetch = async () => Response.json(Array.from({ length:5 }, (_, id) => ({ id })));
+  const request = new Request('https://cuandonaceemilia.pages.dev/api/guesses?scope=ip-status', {
+    headers:{ 'CF-Connecting-IP':'203.0.113.42' }
+  });
+  const response = await onRequestGet({ request, env });
+  assert.deepEqual(await response.json(), { submissions:5, limit:5, limitReached:true });
+});
+
+test('the database trigger limit becomes a friendly HTTP 429 response', async () => {
+  globalThis.fetch = async (_url, init = {}) => (init.method || 'GET') === 'GET'
+    ? Response.json([{ id:1 }, { id:2 }, { id:3 }, { id:4 }])
+    : Response.json({ code:'P0001', message:'ip_submission_limit_reached' }, { status:400 });
+  const response = await onRequestPost({ request:submission(), env });
+  assert.equal(response.status, 429);
+  assert.equal((await response.json()).code, 'IP_SUBMISSION_LIMIT');
 });
 
 test('bet receipt rejects executable and oversized file types before persistence', async () => {

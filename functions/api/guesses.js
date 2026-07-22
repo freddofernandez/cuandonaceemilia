@@ -1,6 +1,7 @@
 const TABLE = 'emilia_guesses';
 const BUCKET = 'emilia-transferencias';
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_GUESSES_PER_IP = 5;
 const ALLOWED_FILES = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
 
 const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff' } });
@@ -21,6 +22,23 @@ async function ipHash(request, secret) {
   return [...new Uint8Array(bytes)].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
+async function ipSubmissionCount(request, env) {
+  const hash = await ipHash(request, env.IP_HASH_SECRET || env.SUPABASE_SECRET_KEY);
+  const response = await supabase(env, `/rest/v1/${TABLE}?select=id&ip_hash=eq.${encodeURIComponent(hash)}&limit=${MAX_GUESSES_PER_IP}`, {
+    headers: { Accept:'application/json' }
+  });
+  if (!response.ok) throw new Error(`Supabase IP count ${response.status}`);
+  const guesses = await response.json();
+  return { hash, count:guesses.length };
+}
+
+const ipLimitResponse = (count = MAX_GUESSES_PER_IP) => json({
+  error:'Esta conexión ya alcanzó el límite de 5 predicciones.',
+  code:'IP_SUBMISSION_LIMIT',
+  submissions:count,
+  limit:MAX_GUESSES_PER_IP
+}, 429);
+
 async function verifyTurnstile(request, env, token) {
   const secret = env.TURNSTILE_SECRET_KEY || env.TURNSTILE_SECRET;
   if (!secret) {
@@ -38,8 +56,13 @@ async function verifyTurnstile(request, env, token) {
   return result.success === true;
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
   try {
+    const url = new URL(request?.url || 'https://local/api/guesses');
+    if (url.searchParams.get('scope') === 'ip-status') {
+      const { count } = await ipSubmissionCount(request, env);
+      return json({ submissions:count, limit:MAX_GUESSES_PER_IP, limitReached:count >= MAX_GUESSES_PER_IP });
+    }
     const response = await supabase(env, `/rest/v1/${TABLE}?select=nickname,birth_datetime,weight_grams,wants_bet&order=birth_datetime.asc&limit=200`, {
       headers: { Accept:'application/json' }
     });
@@ -78,7 +101,8 @@ export async function onRequestPost({ request, env }) {
     if (receipt instanceof File && receipt.size && (receipt.size > MAX_FILE_SIZE || !ALLOWED_FILES.has(receipt.type))) return json({ error:'El comprobante debe ser JPG, PNG, WebP o PDF y pesar menos de 5 MB.' }, 400);
     if (!(await verifyTurnstile(request, env, turnstileToken))) return json({ error:'No pudimos verificar que seas una persona. Volvé a intentarlo.' }, 403);
 
-    const hash = await ipHash(request, env.IP_HASH_SECRET || env.SUPABASE_SECRET_KEY);
+    const { hash, count } = await ipSubmissionCount(request, env);
+    if (count >= MAX_GUESSES_PER_IP) return ipLimitResponse(count);
     const createResponse = await supabase(env, `/rest/v1/${TABLE}`, {
       method:'POST',
       headers:{'Content-Type':'application/json','Prefer':'return=representation'},
@@ -86,10 +110,10 @@ export async function onRequestPost({ request, env }) {
     });
     const created = await createResponse.json().catch(() => ({}));
     if (!createResponse.ok) {
+      if (created.code === 'P0001' && `${created.message || ''}`.includes('ip_submission_limit_reached')) return ipLimitResponse();
       if (created.code === '23505') {
         const details = `${created.message || ''} ${created.details || ''}`;
-        if (details.includes('ip_hash')) return json({ error:'Ya recibimos una predicción desde tu conexión.' }, 409);
-        const label = details.includes('nickname') ? 'Ese apodo' : details.includes('email') ? 'Ese email' : details.includes('birth_datetime') ? 'Esa fecha y hora' : details.includes('weight_grams') ? 'Ese peso' : details.includes('ip_hash') ? 'Ya recibimos una predicción desde tu conexión' : 'Ese dato';
+        const label = details.includes('nickname') ? 'Ese apodo' : details.includes('email') ? 'Ese email' : details.includes('birth_datetime') ? 'Esa fecha y hora' : details.includes('weight_grams') ? 'Ese peso' : 'Ese dato';
         return json({ error:`${label} ya está en uso. Probá con otro.` }, 409);
       }
       throw new Error(`Supabase insert ${createResponse.status}`);
@@ -104,7 +128,7 @@ export async function onRequestPost({ request, env }) {
       const patch = await supabase(env, `/rest/v1/${TABLE}?id=eq.${createdId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({receipt_path:receiptPath}) });
       if (!patch.ok) throw new Error(`Supabase patch ${patch.status}`);
     }
-    return json({ ok:true }, 201);
+    return json({ ok:true, submissions:count + 1, limit:MAX_GUESSES_PER_IP, limitReached:count + 1 >= MAX_GUESSES_PER_IP }, 201);
   } catch (error) {
     console.error('POST guess:', error.message);
     if (receiptPath) await supabase(env, `/storage/v1/object/${BUCKET}/${receiptPath}`, { method:'DELETE' }).catch(() => {});
