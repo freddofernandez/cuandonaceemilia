@@ -1,11 +1,11 @@
 # ¿Cuándo nace Emilia?
 
-SPA familiar para guardar predicciones de fecha, hora y peso, con aporte opcional de ARS 5.000 y comprobante privado.
+SPA familiar para guardar predicciones de fecha, hora y peso, sumar un mensaje opcional para la familia y participar con un aporte opcional de ARS 5.000 y comprobante privado.
 
 ## Configuración
 
 1. Ejecutar `supabase/schema.sql` en el SQL Editor del proyecto.
-   Si la tabla ya existe, ejecutar también una vez las migraciones de `supabase/migrations/` para conservar las horas existentes en horario de Argentina y permitir hasta 5 predicciones por conexión.
+   Si la tabla ya existe, ejecutar también una vez las migraciones de `supabase/migrations/` para conservar las horas existentes en horario de Argentina, permitir hasta 5 predicciones por conexión y agregar los mensajes familiares.
 2. Configurar en Cloudflare Pages los secretos `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `IP_HASH_SECRET`, `TURNSTILE_SITE_KEY` y `TURNSTILE_SECRET_KEY`.
 3. Desarrollo: `npm install && npm run dev`.
 4. Deploy: `npm run deploy`.

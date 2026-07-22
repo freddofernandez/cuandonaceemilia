@@ -48,3 +48,18 @@ test('database schema and migration enforce five submissions per IP', async () =
   assert.match(migration, /drop constraint if exists emilia_ip_unique/);
   assert.match(migration, /pg_advisory_xact_lock/);
 });
+
+test('family messages are limited in the form, API schema, and migration', async () => {
+  const [html, app, schema, migration] = await Promise.all([
+    readFile(new URL('../public/index.html', import.meta.url), 'utf8'),
+    readFile(new URL('../public/app.js', import.meta.url), 'utf8'),
+    readFile(new URL('../supabase/schema.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../supabase/migrations/20260722_family_message.sql', import.meta.url), 'utf8')
+  ]);
+  assert.match(html, /name="family_message"[^>]*maxlength="240"/);
+  assert.match(app, /\.message-toggle/);
+  assert.match(app, /escapeHtml\(familyMessage\)/);
+  assert.match(schema, /family_message text not null default '' check \(char_length\(family_message\) <= 240\)/);
+  assert.match(migration, /add column if not exists family_message text not null default ''/);
+  assert.match(migration, /check \(char_length\(family_message\) <= 240\)/);
+});

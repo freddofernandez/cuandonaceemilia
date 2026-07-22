@@ -8,6 +8,7 @@ create table if not exists public.emilia_guesses (
   birth_datetime timestamp without time zone not null,
   weight_grams integer not null check (weight_grams between 1500 and 6000),
   wants_bet boolean not null default false,
+  family_message text not null default '' check (char_length(family_message) <= 240),
   receipt_path text,
   ip_hash text not null,
   created_at timestamptz not null default now(),

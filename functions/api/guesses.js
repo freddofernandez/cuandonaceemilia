@@ -63,7 +63,7 @@ export async function onRequestGet({ request, env }) {
       const { count } = await ipSubmissionCount(request, env);
       return json({ submissions:count, limit:MAX_GUESSES_PER_IP, limitReached:count >= MAX_GUESSES_PER_IP });
     }
-    const response = await supabase(env, `/rest/v1/${TABLE}?select=nickname,birth_datetime,weight_grams,wants_bet&order=birth_datetime.asc&limit=200`, {
+    const response = await supabase(env, `/rest/v1/${TABLE}?select=nickname,birth_datetime,weight_grams,wants_bet,family_message&order=birth_datetime.asc&limit=200`, {
       headers: { Accept:'application/json' }
     });
     if (!response.ok) throw new Error(`Supabase ${response.status}`);
@@ -87,6 +87,7 @@ export async function onRequestPost({ request, env }) {
     const email = clean(data.get('email')).toLowerCase();
     const localDate = clean(data.get('birth_datetime'));
     const weight = Number(data.get('weight_grams'));
+    const familyMessage = clean(data.get('family_message')).replace(/\r\n/g, '\n');
     const wantsBet = data.get('wants_bet') === 'on';
     const receipt = data.get('receipt');
     const turnstileToken = clean(data.get('cf-turnstile-response'));
@@ -97,6 +98,7 @@ export async function onRequestPost({ request, env }) {
     const birthDate = new Date(`${localDate}:00-03:00`);
     if (!Number.isFinite(birthDate.getTime()) || birthDate <= new Date() || birthDate > new Date(Date.now() + 366 * 864e5)) return json({ error:'La fecha debe estar dentro de los próximos 12 meses.' }, 400);
     if (!Number.isInteger(weight) || weight < 1500 || weight > 6000) return json({ error:'El peso debe ser un número entero entre 1.500 y 6.000 gramos.' }, 400);
+    if (familyMessage.length > 240) return json({ error:'El mensajito no puede superar los 240 caracteres.' }, 400);
     if (wantsBet && (!(receipt instanceof File) || !receipt.size)) return json({ error:'Adjuntá el comprobante para participar de la vaquita.' }, 400);
     if (receipt instanceof File && receipt.size && (receipt.size > MAX_FILE_SIZE || !ALLOWED_FILES.has(receipt.type))) return json({ error:'El comprobante debe ser JPG, PNG, WebP o PDF y pesar menos de 5 MB.' }, 400);
     if (!(await verifyTurnstile(request, env, turnstileToken))) return json({ error:'No pudimos verificar que seas una persona. Volvé a intentarlo.' }, 403);
@@ -106,7 +108,7 @@ export async function onRequestPost({ request, env }) {
     const createResponse = await supabase(env, `/rest/v1/${TABLE}`, {
       method:'POST',
       headers:{'Content-Type':'application/json','Prefer':'return=representation'},
-      body:JSON.stringify({ nickname, email, birth_datetime:`${localDate}:00`, weight_grams:weight, wants_bet:wantsBet, ip_hash:hash })
+      body:JSON.stringify({ nickname, email, birth_datetime:`${localDate}:00`, weight_grams:weight, wants_bet:wantsBet, family_message:familyMessage, ip_hash:hash })
     });
     const created = await createResponse.json().catch(() => ({}));
     if (!createResponse.ok) {

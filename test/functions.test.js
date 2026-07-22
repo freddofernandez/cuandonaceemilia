@@ -21,6 +21,7 @@ function submission(overrides = {}) {
   form.set('email', overrides.email || 'juli@example.com');
   form.set('birth_datetime', overrides.birth_datetime || futureLocalMinute());
   form.set('weight_grams', String(overrides.weight_grams || 3250));
+  if (overrides.family_message !== undefined) form.set('family_message', overrides.family_message);
   if (overrides.turnstileToken) form.set('cf-turnstile-response', overrides.turnstileToken);
   if (overrides.wants_bet) form.set('wants_bet', 'on');
   if (overrides.receipt) form.set('receipt', overrides.receipt, overrides.filename || 'transferencia.pdf');
@@ -37,16 +38,16 @@ test('public leaderboard requests and returns only safe fields', async () => {
   let requestedUrl;
   globalThis.fetch = async (url) => {
     requestedUrl = String(url);
-    return Response.json([{ nickname:'Abu', birth_datetime:'2026-08-10T17:35:00Z', weight_grams:3300, wants_bet:false }]);
+    return Response.json([{ nickname:'Abu', birth_datetime:'2026-08-10T17:35:00Z', weight_grams:3300, wants_bet:false, family_message:'¡Los queremos!' }]);
   };
   const response = await onRequestGet({ request:new Request('https://cuandonaceemilia.pages.dev/api/guesses'), env });
   assert.equal(response.status, 200);
-  assert.match(requestedUrl, /select=nickname,birth_datetime,weight_grams,wants_bet/);
+  assert.match(requestedUrl, /select=nickname,birth_datetime,weight_grams,wants_bet,family_message/);
   assert.doesNotMatch(requestedUrl, /email|ip_hash|receipt_path/);
   assert.equal((await response.json())[0].nickname, 'Abu');
 });
 
-test('valid prediction is inserted with normalized identity and hashed IP', async () => {
+test('valid prediction is inserted with normalized identity, message and hashed IP', async () => {
   let inserted;
   globalThis.fetch = async (url, init = {}) => {
     assert.equal(init.headers.apikey, env.SUPABASE_SECRET_KEY);
@@ -54,12 +55,22 @@ test('valid prediction is inserted with normalized identity and hashed IP', asyn
     inserted = JSON.parse(init.body);
     return Response.json([{ id:'7a908e56-40f2-4d64-a2a4-b0cc2a6385c1' }]);
   };
-  const response = await onRequestPost({ request:submission({ nickname:'  Tío   Juan  ', email:'JUAN@EXAMPLE.COM', birth_datetime:'2027-01-15T11:00' }), env });
+  const response = await onRequestPost({ request:submission({ nickname:'  Tío   Juan  ', email:'JUAN@EXAMPLE.COM', birth_datetime:'2027-01-15T11:00', family_message:'  ¡Ya queremos conocerte!  ' }), env });
   assert.equal(response.status, 201);
   assert.equal(inserted.nickname, 'Tío Juan');
   assert.equal(inserted.email, 'juan@example.com');
   assert.match(inserted.ip_hash, /^[a-f0-9]{64}$/);
   assert.equal(inserted.birth_datetime, '2027-01-15T11:00:00');
+  assert.equal(inserted.family_message, '¡Ya queremos conocerte!');
+});
+
+test('family message is optional and limited to 240 characters server-side', async () => {
+  let called = false;
+  globalThis.fetch = async () => { called = true; return Response.json([]); };
+  const response = await onRequestPost({ request:submission({ family_message:'a'.repeat(241) }), env });
+  assert.equal(response.status, 400);
+  assert.match((await response.json()).error, /240 caracteres/);
+  assert.equal(called, false);
 });
 
 test('production Turnstile verification uses the canonical siteverify contract', async () => {

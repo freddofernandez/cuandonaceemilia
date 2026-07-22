@@ -6,6 +6,8 @@ const fileName = document.querySelector('#file-name');
 const guessDate = document.querySelector('#guess-date');
 const guessTime = document.querySelector('#guess-time');
 const birthDatetime = document.querySelector('#birth-datetime');
+const familyMessage = document.querySelector('#family-message');
+const messageCount = document.querySelector('#message-count');
 const message = document.querySelector('#form-message');
 const submitButton = document.querySelector('#submit-button');
 const alreadyParticipated = document.querySelector('#already-participated');
@@ -64,6 +66,10 @@ window.addEventListener('pageshow', syncBetUI);
 receiptInput.addEventListener('change', () => {
   const selected = receiptInput.files[0];
   fileName.textContent = selected ? selected.name : 'Elegir archivo';
+});
+
+familyMessage.addEventListener('input', () => {
+  messageCount.textContent = `${familyMessage.value.length}/240`;
 });
 
 function setMessage(type, text) {
@@ -166,20 +172,38 @@ async function loadGuesses() {
     if (!response.ok) throw new Error();
     const guesses = await response.json();
     stats.innerHTML = `<span><b>${guesses.length}</b> ${guesses.length === 1 ? 'predicción' : 'predicciones'}</span><span>·</span><span>Cada fecha, hora y peso es único</span>`;
-    leaderboardList.innerHTML = guesses.length ? guesses.map((guess, index) => `
+    leaderboardList.innerHTML = guesses.length ? guesses.map((guess, index) => {
+      const familyMessage = String(guess.family_message || '').trim();
+      const messageId = `guess-message-${index}`;
+      return `
       <article class="guess-row">
         <span class="rank">${String(index + 1).padStart(2, '0')}</span>
         <span class="name">${escapeHtml(guess.nickname)}</span>
         <time class="date" datetime="${escapeHtml(guess.birth_datetime)}">${argentinaDate.format(parseArgentinaDate(guess.birth_datetime))}</time>
         <span class="weight">${Number(guess.weight_grams).toLocaleString('es-AR')} g</span>
-        ${guess.wants_bet
-          ? '<span class="bet-badge">VAQUITA ♡</span>'
-          : '<span class="bet-badge bet-badge-placeholder" aria-hidden="true">VAQUITA ♡</span>'}
-      </article>`).join('') : '<p class="empty">Todavía no hay predicciones. ¡Podés inaugurar la lista! 🌼</p>';
+        <span class="guess-actions">
+          ${guess.wants_bet
+            ? '<span class="bet-badge">VAQUITA ♡</span>'
+            : '<span class="bet-badge bet-badge-placeholder" aria-hidden="true">VAQUITA ♡</span>'}
+          ${familyMessage ? `<button class="message-toggle" type="button" aria-expanded="false" aria-controls="${messageId}" aria-label="Ver mensaje de ${escapeHtml(guess.nickname)}">✉</button>` : ''}
+        </span>
+        ${familyMessage ? `<p id="${messageId}" class="guess-message" hidden>${escapeHtml(familyMessage)}</p>` : ''}
+      </article>`;
+    }).join('') : '<p class="empty">Todavía no hay predicciones. ¡Podés inaugurar la lista! 🌼</p>';
   } catch {
     leaderboardList.innerHTML = '<p class="empty">No pudimos cargar las predicciones. Probá nuevamente en un ratito.</p>';
   }
 }
+
+leaderboardList.addEventListener('click', (event) => {
+  const button = event.target.closest('.message-toggle');
+  if (!button) return;
+  const panel = document.getElementById(button.getAttribute('aria-controls'));
+  const expanded = button.getAttribute('aria-expanded') === 'true';
+  button.setAttribute('aria-expanded', String(!expanded));
+  button.setAttribute('aria-label', `${expanded ? 'Ver' : 'Ocultar'} mensaje`);
+  panel.hidden = expanded;
+});
 
 function showView(view, updateUrl = true) {
   panels.forEach((panel) => { panel.hidden = panel.dataset.panel !== view; });
@@ -224,6 +248,7 @@ form.addEventListener('submit', async (event) => {
     }
     if (!response.ok) throw new Error(body.error || 'No pudimos guardar tu predicción.');
     form.reset();
+    messageCount.textContent = '0/240';
     syncBirthDatetime();
     syncBetUI();
     fileName.textContent = 'Elegir archivo';
